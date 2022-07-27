@@ -6,9 +6,16 @@ from telegram.ext import Updater, CommandHandler, CallbackContext
 from django.core.management.base import BaseCommand
 from dotenv import load_dotenv
 
+from bot.models import User
 
 def start(update: Update, context: CallbackContext):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Hello!")
+
+    user = User.objects.filter(telegram_token=update.effective_user.id).get()
+
+    if user:
+        context.bot.send_message(chat_id=update.effective_chat.id, text=f"Hello, {user.first_name}!")
+    else:
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Hello, user!")
 
 
 class Command(BaseCommand):
