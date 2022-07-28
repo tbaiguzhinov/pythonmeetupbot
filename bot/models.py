@@ -33,7 +33,8 @@ class User(models.Model):
     )
     phone_number = PhoneNumberField(
         'номер телефона',
-        blank=True
+        blank=True,
+        null=True
     )
     is_speaker = models.BooleanField(
         'является докладчиком',
@@ -44,6 +45,13 @@ class User(models.Model):
         'анкета заполнена',
         default=False,
         db_index=True
+    )
+
+    telegram_username = models.CharField(
+        'логин в телеграмме',
+        max_length=30,
+        blank=True,
+        null=True
     )
 
     class Meta:

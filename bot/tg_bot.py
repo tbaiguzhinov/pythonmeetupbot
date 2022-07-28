@@ -126,15 +126,23 @@ def ask_form_questions(update: Update, context: CallbackContext):
                 )
             return HANDLE_FORM
     else:
+        user_data['answers'].extend([update.message.text])
         try:
-            name, company, position, area_of_company, email, telegram = user_data['answers']
+            name, company, position, email, telegram = user_data['answers']
+            try:
+                first_name, last_name = name.split(' ')
+            except ValueError:
+                first_name = name
+                last_name = None
             user, created = User.objects.get_or_create(
-                name=name,
-                company=company,
-                position=position,
-                area_of_company=area_of_company,
+                first_name=first_name,
+                last_name=last_name,
+                company_name=company,
+                job_title=position,
                 email=email,
-                telegram=telegram
+                telegram_id=update.effective_user.id,
+                telegram_username=telegram,
+                questionnaire_filled=True
             )
             if created:
                 context.bot.send_message(
@@ -142,10 +150,12 @@ def ask_form_questions(update: Update, context: CallbackContext):
                         text='Опрос окончен, спасибо за участие!',
                         reply_markup=create_greetings_menu()
                         )
-        except Exception:
+        except Exception as err:
+            print(err)
+            answers = user_data['answers']
             context.bot.send_message(
                         chat_id=update.effective_message.chat_id,
-                        text='Ваша анкета уже есть в базе данных',
+                        text=f'Ваша анкета уже есть в базе данных{answers}',
                         reply_markup=create_greetings_menu()
                         )
         return HANDLE_MENU
