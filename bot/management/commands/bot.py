@@ -13,11 +13,10 @@ from bot.tg_bot import (
     flow_handle_menu,
     flow_question_timeline,
     handle_error,
-    end_conversation
+    end_conversation,
+    START, HANDLE_MENU, HANDLE_PROGRAMS,\
+    HANDLE_QUESTIONS, HANDLE_FLOW, CLOSE
 )
-
-START, HANDLE_MENU, HANDLE_PROGRAMS,\
-    HANDLE_QUESTIONS, HANDLE_FLOW, CLOSE = range(6)
 
 
 class Command(BaseCommand):
@@ -31,8 +30,9 @@ class Command(BaseCommand):
 
 def start_bot():
     token = settings.TOKEN_TELEGRAM
-    user_id = settings.TG_USER_ID
-    logging_token = settings.TG_TOKEN_LOGGING
+    """add a loggining a bit later"""
+    #user_id = settings.TG_USER_ID
+    #logging_token = settings.TG_TOKEN_LOGGING
     """Start the bot."""
     updater = Updater(token)
     dispatcher = updater.dispatcher
