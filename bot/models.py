@@ -103,23 +103,31 @@ class Report(models.Model):
         'название доклада',
         max_length=50
     )
+    meetup = models.ForeignKey(
+        Meetup,
+        related_name='reports',
+        verbose_name='митап',
+        on_delete=models.CASCADE
+    )
     stream = models.ForeignKey(
         Stream,
         related_name='reports',
-        verbose_name='доклад',
+        verbose_name='поток',
         on_delete=models.SET_NULL
-    )
-    starts_at = models.TimeField(
-        'время начала'
-    )
-    ends_at = models.TimeField(
-        'время окончания'
     )
     speaker = models.ForeignKey(
         User,
         related_name='reports',
         verbose_name='докладчик',
         on_delete=models.SET_NULL
+    )
+    starts_at = models.TimeField(
+        'время начала',
+        db_index=True
+    )
+    ends_at = models.TimeField(
+        'время окончания',
+        db_index=True
     )
 
     class Meta:
@@ -134,13 +142,14 @@ class Donation(models.Model):
     sum = models.DecimalField(
         'сумма доната',
         max_digits=10,
-        decimal_places=2
+        decimal_places=2,
+        db_index=True
     )
     donated_at = models.DateTimeField(
         'дата и время доната',
-        auto_now_add=True
+        auto_now_add=True,
     )
-    donated_by = models.ForeignKey(
+    donor = models.ForeignKey(
         User,
         related_name='donations',
         verbose_name='от кого донат',
@@ -153,7 +162,7 @@ class Donation(models.Model):
 
     def __str__(self):
         return f'{self.sum} рублей от ' \
-               f'{self.donated_by.first_name} {self.donated_by.last_name}'
+               f'{self.donor.first_name} {self.donor.last_name}'
 
 
 class Question(models.Model):
