@@ -2,7 +2,7 @@
 import os
 #import time
 #from functools import partial
-
+from django.core.exceptions import FieldError
 from dotenv import load_dotenv
 from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (CallbackContext, CallbackQueryHandler,
@@ -85,7 +85,7 @@ def program_handle_menu(update: Update, context: CallbackContext) -> None:
     clean_message(update, context)
     context.bot.send_message(
         chat_id=update.effective_message.chat_id,
-        text='Пожалуйста выберите программу',
+        text='Пожалуйста выберите поток необходимой программы',
         reply_markup=create_menu(programs)
         )
     return HANDLE_PROGRAMS
@@ -97,7 +97,7 @@ def question_handle_menu(update: Update, context: CallbackContext) -> None:
     clean_message(update, context)
     context.bot.send_message(
         chat_id=update.effective_message.chat_id,
-        text='Пожалуйста выберите спикера, которому вы хотите задать вопрос',
+        text='Пожалуйста выберите поток где выступает спикер, которому вы хотите задать вопрос',
         reply_markup=create_menu(speakers)
         )
     return HANDLE_QUESTIONS
@@ -126,26 +126,28 @@ def ask_form_questions(update: Update, context: CallbackContext):
                 )
             return HANDLE_FORM
     else:
-        name, company, position, area_of_company, email, telegram = user_data['answers']
-        user, created= User.objects.get_or_create(
-            name=name,
-            company=company,
-            position=position,
-            area_of_company=area_of_company,
-            email=email,
-            telegram=telegram
-        )
-        if created:
+        try:
+            name, company, position, area_of_company, email, telegram = user_data['answers']
+            user, created = User.objects.get_or_create(
+                name=name,
+                company=company,
+                position=position,
+                area_of_company=area_of_company,
+                email=email,
+                telegram=telegram
+            )
+            if created:
+                context.bot.send_message(
+                        chat_id=update.effective_message.chat_id,
+                        text='Опрос окончен, спасибо за участие!',
+                        reply_markup=create_greetings_menu()
+                        )
+        except Exception:
             context.bot.send_message(
-                    chat_id=update.effective_message.chat_id,
-                    text=f'Опрос окончен, спасибо за участие!{user_data}',
-                    reply_markup=create_greetings_menu()
-                    )
-        context.bot.send_message(
-                    chat_id=update.effective_message.chat_id,
-                    text=f'Ваша анкета уже есть в базе данных',
-                    reply_markup=create_greetings_menu()
-                    )
+                        chat_id=update.effective_message.chat_id,
+                        text='Ваша анкета уже есть в базе данных',
+                        reply_markup=create_greetings_menu()
+                        )
         return HANDLE_MENU
 
 
