@@ -150,7 +150,7 @@ def ask_form_questions(update: Update, context: CallbackContext):
 
 
 def read_poll_questions():
-    with open('questions_to_clients.txt', 'r') as file_handler:
+    with open('questions_to_clients.txt', 'r', encoding='utf8') as file_handler:
         poll_questions = json.load(file_handler)
     return poll_questions
 
