@@ -7,6 +7,7 @@ from telegram.ext import (CallbackContext, CallbackQueryHandler,
                           CommandHandler, ConversationHandler, Filters,
                           MessageHandler, Updater)
 from bot.tg_bot import (
+    HANDLE_FORM,
     question_handle_menu,
     program_handle_menu,
     start,
@@ -14,6 +15,8 @@ from bot.tg_bot import (
     flow_question_timeline,
     handle_error,
     end_conversation,
+    form_handle,
+    ask_form_questions,
     START, HANDLE_MENU, HANDLE_PROGRAMS,\
     HANDLE_QUESTIONS, HANDLE_FLOW, CLOSE
 )
@@ -45,8 +48,12 @@ def start_bot():
             HANDLE_MENU: [
                 CallbackQueryHandler(question_handle_menu, pattern="^(questions)$"),
                 CallbackQueryHandler(program_handle_menu, pattern="^(programs)$"),
+                CallbackQueryHandler(form_handle, pattern="^(form)$"),
                 CallbackQueryHandler(start, pattern="^(back)$"),
                 ],
+            HANDLE_FORM: [
+                MessageHandler(Filters.text & ~Filters.command, ask_form_questions),
+            ],
             HANDLE_FLOW: [
                 CallbackQueryHandler(start, pattern="^(back)$"),
                 CallbackQueryHandler(flow_handle_menu, pattern="^(flow)\d*$"),
