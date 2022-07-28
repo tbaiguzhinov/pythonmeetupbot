@@ -33,7 +33,8 @@ class User(models.Model):
     )
     phone_number = PhoneNumberField(
         'номер телефона',
-        blank=True
+        blank=True,
+        null=True
     )
     is_speaker = models.BooleanField(
         'является докладчиком',
@@ -44,6 +45,13 @@ class User(models.Model):
         'анкета заполнена',
         default=False,
         db_index=True
+    )
+
+    telegram_username = models.CharField(
+        'логин в телеграмме',
+        max_length=30,
+        blank=True,
+        null=True
     )
 
     class Meta:
@@ -160,10 +168,99 @@ class Donation(models.Model):
         verbose_name = 'донат'
         verbose_name_plural = 'донаты'
 
+    class Meta:
+        verbose_name = 'поток'
+        verbose_name_plural = 'потоки'
+
+    def __str__(self):
+        return f'{self.title}'
+
+
+class Report(models.Model):
+    title = models.CharField(
+        'название доклада',
+        max_length=50
+    )
+    stream = models.ForeignKey(
+        Stream,
+        related_name='reports',
+        verbose_name='доклад',
+        on_delete=models.SET_NULL,
+        null= True
+    )
+    starts_at = models.TimeField(
+        'время начала'
+    )
+    ends_at = models.TimeField(
+        'время окончания'
+    )
+    speaker = models.ForeignKey(
+        User,
+        related_name='reports',
+        verbose_name='докладчик',
+        on_delete=models.SET_NULL,
+        null= True
+    )
+
+    class Meta:
+        verbose_name = 'доклад'
+        verbose_name_plural = 'доклады'
+
+    def __str__(self):
+        return f'{self.title}, {self.starts_at} - {self.ends_at}'
+
+
+class Donation(models.Model):
+    sum = models.DecimalField(
+        'сумма доната',
+        max_digits=10,
+        decimal_places=2
+    )
+    donated_at = models.DateTimeField(
+        'дата и время доната',
+        auto_now_add=True
+    )
+    donated_by = models.ForeignKey(
+        User,
+        related_name='donations',
+        verbose_name='от кого донат',
+        on_delete=models.SET_NULL,
+        null=True
+    )
+
+    class Meta:
+        verbose_name = 'донат'
+        verbose_name_plural = 'донаты'
+
     def __str__(self):
         return f'{self.sum} рублей от ' \
-               f'{self.donor.first_name} {self.donor.last_name}'
+               f'{self.donated_by.first_name} {self.donated_by.last_name}'
 
+
+class Question(models.Model):
+    text = models.TextField(
+        'текст вопроса'
+    )
+    author = models.ForeignKey(
+        User,
+        related_name='asked_questions',
+        verbose_name='автор вопроса',
+        on_delete=models.SET_NULL,
+        null= True
+    )
+    recipient = models.ForeignKey(
+        User,
+        related_name='received_questions',
+        verbose_name='адресат вопроса',
+        on_delete=models.CASCADE
+    )
+
+    class Meta:
+        verbose_name = 'вопрос'
+        verbose_name_plural = 'вопросы'
+
+    def __str__(self):
+        return f'вопрос для {self.recipient.first_name} {self.recipient.last_name}'
 
 class Question(models.Model):
     text = models.TextField(
