@@ -1,5 +1,3 @@
-from io import open_code
-from ntpath import realpath
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -25,7 +23,7 @@ class User(models.Model):
         blank=True
     )
     job_title = models.CharField(
-        'название компании',
+        'Название должности',
         max_length=50,
         blank=True
     )
@@ -35,7 +33,8 @@ class User(models.Model):
     )
     phone_number = PhoneNumberField(
         'номер телефона',
-        blank=True
+        blank=True,
+        null=True
     )
     is_speaker = models.BooleanField(
         'является докладчиком',
@@ -46,6 +45,12 @@ class User(models.Model):
         'анкета заполнена',
         default=False,
         db_index=True
+    )
+    telegram_username = models.CharField(
+        'логин в телеграмме',
+        max_length=30,
+        blank=True,
+        null=True
     )
 
     class Meta:
@@ -135,7 +140,7 @@ class Block(models.Model):
     class Meta:
         verbose_name = 'блок'
         verbose_name_plural = 'блоки'
-    
+   
     def __str__(self):
         return self.title
 
@@ -148,14 +153,16 @@ class Report(models.Model):
     block = models.ForeignKey(
         Block,
         related_name='reports',
-        verbose_name='блок',
-        on_delete=models.CASCADE,
+        verbose_name='доклад',
+        on_delete=models.SET_NULL,
+        null=True
     )
     speaker = models.ForeignKey(
         User,
         related_name='reports',
         verbose_name='докладчик',
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
+        null=True
     )
 
     class Meta:
@@ -180,7 +187,8 @@ class Donation(models.Model):
         User,
         related_name='donations',
         verbose_name='от кого донат',
-        on_delete=models.CASCADE
+        on_delete=models.SET_NULL,
+        null=True
     )
 
     class Meta:
@@ -200,7 +208,8 @@ class Question(models.Model):
         User,
         related_name='asked_questions',
         verbose_name='автор вопроса',
-        on_delete=models.CASCADE
+        on_delete=models.SET_NULL,
+        null=True
     )
     recipient = models.ForeignKey(
         User,

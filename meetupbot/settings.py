@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'phonenumber_field',
     'bot',
     'nested_inline',
 ]
@@ -132,3 +133,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 TOKEN_TELEGRAM = os.getenv('TOKEN_TELEGRAM')
 TG_USER_ID = os.getenv('TG_USER_ID')
 TG_TOKEN_LOGGING = os.getenv('TG_TOKEN_LOGGING')
+
+PHONENUMBER_DEFAULT_REGION = 'RU'
