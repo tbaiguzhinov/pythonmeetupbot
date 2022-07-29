@@ -1,4 +1,9 @@
 Django==4.0.5
 python-telegram-bot==13.12
 python_dotenv==0.20.0
+<<<<<<< HEAD
 django-phonenumber-field==6.3.0
+=======
+django-phonenumber-field==6.3.0
+django-nested-inline==0.4.5
+>>>>>>> 2e6372afef38d17ccb4fa45f988d168d2870ca8a
