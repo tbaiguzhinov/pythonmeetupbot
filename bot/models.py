@@ -62,6 +62,12 @@ class User(models.Model):
 
 
 class Meetup(models.Model):
+    OPEN = 'OP'
+    FINISHED = 'FN'
+    STATUS_CHOICES = [
+        (OPEN, 'Открыт'),
+        (FINISHED, 'Закрыт')
+    ]
     title = models.CharField(
         'название митапа',
         max_length=100
@@ -75,6 +81,11 @@ class Meetup(models.Model):
         verbose_name='участники',
         related_name='meetups',
         blank=True
+    )
+    status = models.CharField(
+        'Статус мероприятия',
+        max_length=2,
+        choices=STATUS_CHOICES
     )
 
     class Meta:
@@ -136,13 +147,17 @@ class Block(models.Model):
         verbose_name='эксперт',
         blank=True,
     )
+    starts_at = models.TimeField(
+        'время начала',
+    )
 
     class Meta:
         verbose_name = 'блок'
         verbose_name_plural = 'блоки'
-   
+
+
     def __str__(self):
-        return self.title
+        return f'{self.starts_at} {self.title}'
 
 
 class Report(models.Model):
