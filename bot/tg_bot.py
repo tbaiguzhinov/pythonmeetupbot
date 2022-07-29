@@ -1,3 +1,4 @@
+from email import message
 import os
 #import time
 #from functools import partial
@@ -34,7 +35,7 @@ def create_menu(products):
     keyboard = []
     callbackdata, items = products
     for product in items:
-        product_button = [InlineKeyboardButton(product.title, callback_data=f'{callbackdata}_{product.id}')]
+        product_button = [InlineKeyboardButton(product.__str__(), callback_data=f'{callbackdata}_{product.id}')]
         keyboard.append(product_button) 
     back_button = [InlineKeyboardButton('Назад', callback_data='back')]
     keyboard.append(back_button)
@@ -79,8 +80,30 @@ def stream_handle_menu(update: Update, context: CallbackContext) -> None:
         return HANDLE_BLOCK
 
 
-def flow_question_timeline(update: Update, context: CallbackContext):
-    pass
+def handle_block_reports(update: Update, context: CallbackContext):
+    clean_message(update, context)
+    keyboard = []
+    query = update.callback_query.data
+    entity, stream_id = query.split('_')
+    block = Block.objects.get(id=int(stream_id))
+    reports = block.reports.all()
+    rep_message = ''
+    for report in reports:
+        rep_message += form_report_message(report)
+    back_button = [InlineKeyboardButton('Назад', callback_data='back')]
+    keyboard.append(back_button)
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    context.bot.send_message(
+        chat_id=update.effective_message.chat_id,
+        text=rep_message,
+        reply_markup=reply_markup
+    )
+    return HANDLE_BLOCK    
+
+
+def form_report_message(report):
+    report_message = f'Время {report.starts_at} - {report.ends_at}\n{report.title}\n{report.speaker}'
+    return report_message
 
 
 def program_handle_menu(update: Update, context: CallbackContext) -> None:

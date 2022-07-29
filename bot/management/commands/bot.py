@@ -12,7 +12,7 @@ from bot.tg_bot import (
     program_handle_menu,
     start,
     stream_handle_menu,
-    flow_question_timeline,
+    handle_block_reports,
     handle_error,
     end_conversation,
     form_handle,
@@ -68,7 +68,6 @@ def start_bot():
             HANDLE_FLOW: [
                 CallbackQueryHandler(start, pattern="^(back)$"),
                 CallbackQueryHandler(stream_handle_menu, pattern="^(reports)\S\d*$"),
-                CallbackQueryHandler(flow_question_timeline, pattern="^(timeline)$")
             ],
             HANDLE_PROGRAMS: [
                 CallbackQueryHandler(program_handle_menu, pattern="^(programs)\d*$"),
@@ -79,7 +78,7 @@ def start_bot():
                 CallbackQueryHandler(start, pattern="^(back)$"),
             ],
             HANDLE_BLOCK: [
-                CallbackQueryHandler(question_handle_menu, pattern="^(questions)\S\d*$"),
+                CallbackQueryHandler(handle_block_reports, pattern="^(blockreport)\S\d*$"),
                 CallbackQueryHandler(start, pattern="^(back)$"),
             ],
             CLOSE: [
