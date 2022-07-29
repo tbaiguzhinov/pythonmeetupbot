@@ -111,6 +111,12 @@ class Block(models.Model):
         related_name='blocks',
         on_delete=models.CASCADE,
     )
+    starts_at = models.TimeField(
+        'время начала'
+    )
+    ends_at = models.TimeField(
+        'время окончания'
+    )
     moderator = models.ForeignKey(
         User,
         related_name='moderating_blocks',
@@ -144,12 +150,6 @@ class Report(models.Model):
         related_name='reports',
         verbose_name='блок',
         on_delete=models.CASCADE,
-    )
-    starts_at = models.TimeField(
-        'время начала'
-    )
-    ends_at = models.TimeField(
-        'время окончания'
     )
     speaker = models.ForeignKey(
         User,
