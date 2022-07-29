@@ -1,3 +1,5 @@
+from io import open_code
+from ntpath import realpath
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -86,7 +88,7 @@ class Stream(models.Model):
     meetup = models.ForeignKey(
         Meetup,
         related_name='streams',
-        verbose_name='поток',
+        verbose_name='митап',
         on_delete=models.CASCADE
     )
 
@@ -95,7 +97,41 @@ class Stream(models.Model):
         verbose_name_plural = 'потоки'
 
     def __str__(self):
-        return f'{self.title}'
+        return self.title
+
+
+class Block(models.Model):
+    title = models.CharField(
+        'название блока',
+        max_length=50
+    )
+    stream = models.ForeignKey(
+        Stream,
+        verbose_name='поток',
+        related_name='blocks',
+        on_delete=models.CASCADE,
+    )
+    moderator = models.ForeignKey(
+        User,
+        related_name='moderating_blocks',
+        verbose_name='модератор',
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+    )
+    expert = models.ManyToManyField(
+        User,
+        related_name='experting_blocks',
+        verbose_name='эксперт',
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = 'блок'
+        verbose_name_plural = 'блоки'
+    
+    def __str__(self):
+        return self.title
 
 
 class Report(models.Model):
@@ -103,11 +139,11 @@ class Report(models.Model):
         'название доклада',
         max_length=50
     )
-    stream = models.ForeignKey(
-        Stream,
+    block = models.ForeignKey(
+        Block,
         related_name='reports',
-        verbose_name='доклад',
-        on_delete=models.SET_NULL
+        verbose_name='блок',
+        on_delete=models.CASCADE,
     )
     starts_at = models.TimeField(
         'время начала'
@@ -119,7 +155,7 @@ class Report(models.Model):
         User,
         related_name='reports',
         verbose_name='докладчик',
-        on_delete=models.SET_NULL
+        on_delete=models.CASCADE,
     )
 
     class Meta:
@@ -144,7 +180,7 @@ class Donation(models.Model):
         User,
         related_name='donations',
         verbose_name='от кого донат',
-        on_delete=models.SET_NULL
+        on_delete=models.CASCADE
     )
 
     class Meta:
@@ -164,7 +200,7 @@ class Question(models.Model):
         User,
         related_name='asked_questions',
         verbose_name='автор вопроса',
-        on_delete=models.SET_NULL
+        on_delete=models.CASCADE
     )
     recipient = models.ForeignKey(
         User,
