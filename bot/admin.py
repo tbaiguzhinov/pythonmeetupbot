@@ -1,15 +1,6 @@
 from django.contrib import admin
 from .models import User, Meetup, Stream, Report, Donation, Question
 
-<<<<<<< HEAD
-from django.contrib import admin
-
-@admin.register(User)
-class UserAdmin(admin.ModelAdmin):
-    search_fields = [
-        'telegram_id',
-    ]
-=======
 from nested_inline.admin import NestedStackedInline, NestedModelAdmin
 from bot.models import User, Meetup, Stream, Report, Block
 
@@ -46,4 +37,3 @@ class MeetupAdmin(NestedModelAdmin):
     inlines = [
         StreamInline,
         ]
->>>>>>> 2e6372afef38d17ccb4fa45f988d168d2870ca8a
