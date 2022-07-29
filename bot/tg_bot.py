@@ -1,4 +1,3 @@
-
 import os
 #import time
 #from functools import partial
@@ -16,6 +15,7 @@ START, HANDLE_MENU, HANDLE_PROGRAMS,\
 HANDLE_FORM, HANDLE_QUESTIONS, HANDLE_FLOW, CLOSE = range(7)
 
 logger = logging.getLogger(__name__)
+
 
 def create_greetings_menu():
     keyboard = []
@@ -59,18 +59,18 @@ def flow_handle_menu(update: Update, context: CallbackContext) -> None:
         #flows = Program.objects.flows
         flows = ('flow', [])
         context.bot.send_message(
-        chat_id=update.effective_message.chat_id,
-        text='Пожалуйста выберите поток',
-        reply_markup=create_menu(flows)
+            chat_id=update.effective_message.chat_id,
+            text='Пожалуйста выберите поток',
+            reply_markup=create_menu(flows)
         )
         return HANDLE_PROGRAMS
     elif query == 'questions':
         #flows = Question.objects.flows
         flows = ('flow', [])
         context.bot.send_message(
-        chat_id=update.effective_message.chat_id,
-        text='Пожалуйста выберите поток',
-        reply_markup=create_menu(flows)
+            chat_id=update.effective_message.chat_id,
+            text='Пожалуйста выберите поток',
+            reply_markup=create_menu(flows)
         )
         return HANDLE_FLOW
 
