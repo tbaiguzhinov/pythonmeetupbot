@@ -8,11 +8,12 @@ from telegram.ext import (CallbackContext, CallbackQueryHandler,
                           CommandHandler, ConversationHandler, Filters,
                           MessageHandler, Updater)
 from bot.static_text import greetings_message
-from bot.models import User
+from bot.models import User, Meetup, Stream, Report, Donation, Question,Block
 import json
 import logging
 START, HANDLE_MENU, HANDLE_PROGRAMS,\
-HANDLE_FORM, HANDLE_QUESTIONS, HANDLE_FLOW, CLOSE = range(7)
+HANDLE_FORM, HANDLE_QUESTIONS, HANDLE_FLOW,\
+    HANDLE_BLOCK, CLOSE = range(8)
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +34,7 @@ def create_menu(products):
     keyboard = []
     callbackdata, items = products
     for product in items:
-        product_button = [InlineKeyboardButton(product.name, callback_data=f'{callbackdata}{product.id}')]
+        product_button = [InlineKeyboardButton(product.title, callback_data=f'{callbackdata}_{product.id}')]
         keyboard.append(product_button) 
     back_button = [InlineKeyboardButton('Назад', callback_data='back')]
     keyboard.append(back_button)
@@ -51,28 +52,31 @@ def start(update: Update, context: CallbackContext) -> None:
     return HANDLE_MENU
 
 
-def flow_handle_menu(update: Update, context: CallbackContext) -> None:
-    #flows = Flow.objects.all()
+def stream_handle_menu(update: Update, context: CallbackContext) -> None:
     clean_message(update, context)
-    query = update.callback_query
-    if query == 'programs':
-        #flows = Program.objects.flows
-        flows = ('flow', [])
+    query = update.callback_query.data
+    entity, stream_id = query.split('_')
+    if entity == 'reports':
+        stream = Stream.objects.get(id=int(stream_id))
+        blocks = stream.blocks.all()
+        program = ('blockreport', blocks)
         context.bot.send_message(
             chat_id=update.effective_message.chat_id,
-            text='Пожалуйста выберите поток',
-            reply_markup=create_menu(flows)
+            text='Выберите интересующий вас блок докладов',
+            reply_markup=create_menu(program)
         )
-        return HANDLE_PROGRAMS
-    elif query == 'questions':
-        #flows = Question.objects.flows
-        flows = ('flow', [])
+        return HANDLE_BLOCK
+    elif entity == 'questions':
+        # TODO
+        stream = Stream.objects.get(id=int(stream_id))
+        blocks = stream.blocks.all()
+        program = ('blockquestions', blocks)
         context.bot.send_message(
             chat_id=update.effective_message.chat_id,
-            text='Пожалуйста выберите поток',
-            reply_markup=create_menu(flows)
+            text='Выберите интересующий вас блок, где выступает докладчик, которому вы хотите задать вопрос',
+            reply_markup=create_menu(program)
         )
-        return HANDLE_FLOW
+        return HANDLE_BLOCK
 
 
 def flow_question_timeline(update: Update, context: CallbackContext):
@@ -80,15 +84,17 @@ def flow_question_timeline(update: Update, context: CallbackContext):
 
 
 def program_handle_menu(update: Update, context: CallbackContext) -> None:
-    #programs = Programms.objects.all()
-    programs = ('program', [])
+    reports = Report.objects.all()
+    streams = [report.block.stream for report in reports]
+    current_streams = set(stream for stream in streams if stream.meetup.status == 'OP')
+    program = ('reports', current_streams)
     clean_message(update, context)
     context.bot.send_message(
         chat_id=update.effective_message.chat_id,
         text='Пожалуйста выберите поток необходимой программы',
-        reply_markup=create_menu(programs)
+        reply_markup=create_menu(program)
         )
-    return HANDLE_PROGRAMS
+    return HANDLE_FLOW
 
 
 def question_handle_menu(update: Update, context: CallbackContext) -> None:
@@ -128,7 +134,7 @@ def ask_form_questions(update: Update, context: CallbackContext):
     else:
         user_data['answers'].extend([update.message.text])
         try:
-            name, company, position, email, telegram = user_data['answers']
+            name, company, position, email = user_data['answers']
             try:
                 first_name, last_name = name.split(' ')
             except ValueError:
@@ -141,7 +147,7 @@ def ask_form_questions(update: Update, context: CallbackContext):
                 job_title=position,
                 email=email,
                 telegram_id=update.effective_user.id,
-                telegram_username=telegram,
+                telegram_username=update.message.from_user.username,
                 questionnaire_filled=True
             )
             if created:
@@ -175,6 +181,10 @@ def clean_message(update: Update, context: CallbackContext):
 
 def handle_error(update: Update, context: CallbackContext):
     """Log Errors caused by Updates."""
+    logger.warning(
+        f'Update {update} caused error {context.error},\
+        traceback {context.error.__traceback__}'
+        )
 
 
 def end_conversation(update: Update, context: CallbackContext):

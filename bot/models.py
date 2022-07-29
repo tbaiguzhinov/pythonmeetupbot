@@ -62,6 +62,12 @@ class User(models.Model):
 
 
 class Meetup(models.Model):
+    OPEN = 'OP'
+    FINISHED = 'FN'
+    STATUS_CHOICES = [
+        (OPEN, 'Открыт'),
+        (FINISHED, 'Закрыт')
+    ]
     title = models.CharField(
         'название митапа',
         max_length=100
@@ -75,6 +81,11 @@ class Meetup(models.Model):
         verbose_name='участники',
         related_name='meetups',
         blank=True
+    )
+    status = models.CharField(
+        'Статус мероприятия',
+        max_length=2,
+        choices=STATUS_CHOICES
     )
 
     class Meta:
