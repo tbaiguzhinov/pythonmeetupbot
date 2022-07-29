@@ -1,3 +1,5 @@
+from io import open_code
+from ntpath import realpath
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -94,7 +96,7 @@ class Stream(models.Model):
     meetup = models.ForeignKey(
         Meetup,
         related_name='streams',
-        verbose_name='поток',
+        verbose_name='митап',
         on_delete=models.CASCADE
     )
 
@@ -103,7 +105,41 @@ class Stream(models.Model):
         verbose_name_plural = 'потоки'
 
     def __str__(self):
-        return f'{self.title}'
+        return self.title
+
+
+class Block(models.Model):
+    title = models.CharField(
+        'название блока',
+        max_length=50
+    )
+    stream = models.ForeignKey(
+        Stream,
+        verbose_name='поток',
+        related_name='blocks',
+        on_delete=models.CASCADE,
+    )
+    moderator = models.ForeignKey(
+        User,
+        related_name='moderating_blocks',
+        verbose_name='модератор',
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+    )
+    expert = models.ManyToManyField(
+        User,
+        related_name='experting_blocks',
+        verbose_name='эксперт',
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = 'блок'
+        verbose_name_plural = 'блоки'
+
+    def __str__(self):
+        return self.title
 
 
 class Report(models.Model):
