@@ -83,12 +83,13 @@ class Meetup(models.Model):
     class Meta:
         verbose_name = 'митап'
         verbose_name_plural = 'митапы'
+        ordering = ['date']
 
     def __str__(self):
         return f'{self.title} - {self.date}'
 
 
-class Stream(models.Model):
+class Flow(models.Model):
     title = models.CharField(
         'название потока',
         max_length=50
@@ -113,8 +114,8 @@ class Block(models.Model):
         'название блока',
         max_length=50
     )
-    stream = models.ForeignKey(
-        Stream,
+    flow = models.ForeignKey(
+        Flow,
         verbose_name='поток',
         related_name='blocks',
         on_delete=models.CASCADE,
@@ -153,17 +154,19 @@ class Report(models.Model):
         verbose_name='митап',
         on_delete=models.CASCADE
     )
-    stream = models.ForeignKey(
-        Stream,
+    flow = models.ForeignKey(
+        Flow,
         related_name='reports',
         verbose_name='поток',
-        on_delete=models.SET_NULL
+        on_delete=models.SET_NULL,
+        null=True
     )
     speaker = models.ForeignKey(
         User,
         related_name='reports',
         verbose_name='докладчик',
-        on_delete=models.SET_NULL
+        on_delete=models.SET_NULL,
+        null=True
     )
     starts_at = models.TimeField(
         'время начала',
@@ -172,70 +175,6 @@ class Report(models.Model):
     ends_at = models.TimeField(
         'время окончания',
         db_index=True
-    )
-
-    class Meta:
-        verbose_name = 'доклад'
-        verbose_name_plural = 'доклады'
-
-    def __str__(self):
-        return f'{self.title}, {self.starts_at} - {self.ends_at}'
-
-
-class Donation(models.Model):
-    sum = models.DecimalField(
-        'сумма доната',
-        max_digits=10,
-        decimal_places=2,
-        db_index=True
-    )
-    donated_at = models.DateTimeField(
-        'дата и время доната',
-        auto_now_add=True,
-    )
-    donor = models.ForeignKey(
-        User,
-        related_name='donations',
-        verbose_name='от кого донат',
-        on_delete=models.SET_NULL
-    )
-
-    class Meta:
-        verbose_name = 'донат'
-        verbose_name_plural = 'донаты'
-
-    class Meta:
-        verbose_name = 'поток'
-        verbose_name_plural = 'потоки'
-
-    def __str__(self):
-        return f'{self.title}'
-
-
-class Report(models.Model):
-    title = models.CharField(
-        'название доклада',
-        max_length=50
-    )
-    stream = models.ForeignKey(
-        Stream,
-        related_name='reports',
-        verbose_name='доклад',
-        on_delete=models.SET_NULL,
-        null= True
-    )
-    starts_at = models.TimeField(
-        'время начала'
-    )
-    ends_at = models.TimeField(
-        'время окончания'
-    )
-    speaker = models.ForeignKey(
-        User,
-        related_name='reports',
-        verbose_name='докладчик',
-        on_delete=models.SET_NULL,
-        null= True
     )
 
     class Meta:
@@ -282,7 +221,7 @@ class Question(models.Model):
         related_name='asked_questions',
         verbose_name='автор вопроса',
         on_delete=models.SET_NULL,
-        null= True
+        null=True
     )
     recipient = models.ForeignKey(
         User,
@@ -298,26 +237,3 @@ class Question(models.Model):
     def __str__(self):
         return f'вопрос для {self.recipient.first_name} {self.recipient.last_name}'
 
-class Question(models.Model):
-    text = models.TextField(
-        'текст вопроса'
-    )
-    author = models.ForeignKey(
-        User,
-        related_name='asked_questions',
-        verbose_name='автор вопроса',
-        on_delete=models.SET_NULL
-    )
-    recipient = models.ForeignKey(
-        User,
-        related_name='received_questions',
-        verbose_name='адресат вопроса',
-        on_delete=models.CASCADE
-    )
-
-    class Meta:
-        verbose_name = 'вопрос'
-        verbose_name_plural = 'вопросы'
-
-    def __str__(self):
-        return f'вопрос для {self.recipient.first_name} {self.recipient.last_name}'

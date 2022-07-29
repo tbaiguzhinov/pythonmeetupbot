@@ -8,7 +8,7 @@ from telegram.ext import (CallbackContext, CallbackQueryHandler,
                           MessageHandler, Updater)
 from bot.tg_bot import (
     HANDLE_FORM,
-    question_handle_menu,
+    select_speaker_menu,
     program_handle_menu,
     start,
     flow_handle_menu,
@@ -17,8 +17,9 @@ from bot.tg_bot import (
     end_conversation,
     form_handle,
     ask_form_questions,
+    send_message_to_speaker,
     START, HANDLE_MENU, HANDLE_PROGRAMS,\
-    HANDLE_QUESTIONS, HANDLE_FLOW, CLOSE
+    HANDLE_QUESTION, HANDLE_FLOW, CLOSE, SEND_QUESTION
 )
 
 
@@ -46,7 +47,7 @@ def start_bot():
                 MessageHandler(Filters.text, start),
                 ],
             HANDLE_MENU: [
-                CallbackQueryHandler(question_handle_menu, pattern="^(questions)$"),
+                CallbackQueryHandler(flow_handle_menu, pattern="^(questions)$"),
                 CallbackQueryHandler(program_handle_menu, pattern="^(programs)$"),
                 CallbackQueryHandler(form_handle, pattern="^(form)$"),
                 CallbackQueryHandler(start, pattern="^(back)$"),
@@ -63,9 +64,13 @@ def start_bot():
                 CallbackQueryHandler(program_handle_menu, pattern="^(programs)\d*$"),
                 CallbackQueryHandler(start, pattern="^(back)$"),
             ],
-            HANDLE_QUESTIONS: [
-                CallbackQueryHandler(question_handle_menu, pattern="^(questions)\d*$"),
+            HANDLE_QUESTION: [
+                CallbackQueryHandler(select_speaker_menu, pattern="^(flow|)\d*$"),
+                CallbackQueryHandler(select_speaker_menu, pattern="^(speaker|)\d*$"),
                 CallbackQueryHandler(start, pattern="^(back)$"),
+            ],
+            SEND_QUESTION: [
+                MessageHandler(Filters.text & ~Filters.command, send_message_to_speaker)
             ],
             CLOSE: [
                 
