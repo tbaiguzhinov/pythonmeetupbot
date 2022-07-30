@@ -15,6 +15,7 @@ from bot.tg_bot import (
     handle_error,
     end_conversation,
     form_handle,
+    meeting_handle,
     ask_form_questions,
     question_stream_handle_menu,
     select_speaker_menu,
@@ -65,6 +66,7 @@ def start_bot():
                 CallbackQueryHandler(question_stream_handle_menu, pattern="^(questions)$"),
                 CallbackQueryHandler(program_handle_menu, pattern="^(programs)$"),
                 CallbackQueryHandler(form_handle, pattern="^(form)$"),
+                CallbackQueryHandler(meeting_handle, pattern="^(meeting)$"),
                 CallbackQueryHandler(start, pattern="^(back)$"),
                 ],
             HANDLE_FORM: [
