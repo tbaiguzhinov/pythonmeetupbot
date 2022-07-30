@@ -4,7 +4,8 @@ import os
 #from functools import partial
 from django.core.exceptions import FieldError
 from dotenv import load_dotenv
-from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram import (Bot, InlineKeyboardButton, InlineKeyboardMarkup,
+                      Update, error as telegram_error)
 from telegram.ext import (CallbackContext, CallbackQueryHandler,
                           CommandHandler, ConversationHandler, Filters,
                           MessageHandler, Updater)
@@ -46,7 +47,7 @@ def create_menu(products):
     back_button = [InlineKeyboardButton('Назад', callback_data='back')]
     keyboard.append(back_button)
     reply_markup = InlineKeyboardMarkup(keyboard)
-    return reply_markup    
+    return reply_markup
 
 
 def start(update: Update, context: CallbackContext) -> None:
@@ -79,6 +80,7 @@ def stream_handle_menu(update: Update, context: CallbackContext) -> None:
 
 
 def question_stream_handle_menu(update: Update, context: CallbackContext) -> None:
+    clean_message(update, context)
     active_meetup = Meetup.objects.get(status=Meetup.OPEN)
     streams = active_meetup.streams.all()
     streams = ('stream', list(streams))
@@ -159,6 +161,7 @@ def select_speaker_menu(update: Update, context: CallbackContext) -> None:
 
 
 def save_chosen_speaker(update: Update, context: CallbackContext) -> None:
+    clean_message(update, context)
     query = update.callback_query
     entity, speaker_id = query.data.split('_')
     user_data = context.user_data
@@ -173,17 +176,21 @@ def save_chosen_speaker(update: Update, context: CallbackContext) -> None:
 def send_message_to_speaker(update: Update, context: CallbackContext) -> None:
     question_text = update.message.text
     current_user = User.objects.get(telegram_id=update.effective_message.chat_id)
-    current_user_details = f'{current_user.first_name} {current_user.last_name} ,' \
+    current_user_details = f'{current_user.first_name} {current_user.last_name}, ' \
                            f'{current_user.job_title} at {current_user.company_name}:\n'
     speaker_to_ask_id = context.user_data.pop('speaker_to_ask_id')
-    context.bot.send_message(
-        chat_id=speaker_to_ask_id,
-        text=current_user_details + question_text,
-    )
+    try:
+        context.bot.send_message(
+            chat_id=speaker_to_ask_id,
+            text=current_user_details + question_text,
+        )
+    except telegram_error.BadRequest as e:
+        logger.exception(e)
+    user_exists = User.objects.filter(telegram_id=update.effective_user.id).exists()
     context.bot.send_message(
         chat_id=update.effective_message.chat_id,
         text='Спасибо за ваш вопрос!',
-        reply_markup=create_greetings_menu()
+        reply_markup=create_greetings_menu(user_exists)
     )
     return HANDLE_MENU
 
