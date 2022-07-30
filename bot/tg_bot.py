@@ -26,6 +26,9 @@ def create_greetings_menu(user_exists):
     if not user_exists:
         form_keyboard = [InlineKeyboardButton('Заполнить анкету', callback_data='form')]
         keyboard.append(form_keyboard)
+    else:
+        meeting_keyboard = [InlineKeyboardButton('Хочу знакомиться!', callback_data='meeting')]
+        keyboard.append(meeting_keyboard)
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
 
@@ -103,6 +106,12 @@ def question_handle_menu(update: Update, context: CallbackContext) -> None:
         reply_markup=create_menu(speakers)
         )
     return HANDLE_QUESTIONS
+
+
+def meeting_handle(update: Update, context: CallbackContext) -> None:
+    users = User.objects.exclude(telegram_id=update.effective_user.id,)
+    print(users)
+    pass
 
 
 def form_handle(update: Update, context: CallbackContext):
