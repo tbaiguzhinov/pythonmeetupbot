@@ -9,12 +9,14 @@ from telegram.ext import (CallbackContext, CallbackQueryHandler,
                           CommandHandler, ConversationHandler, Filters,
                           MessageHandler, Updater)
 from bot.static_text import greetings_message
-from bot.models import User, Meetup, Stream, Report, Donation, Question,Block
+from bot.models import User, Meetup, Stream, Report, Donation, Question, Block
 import json
 import logging
+
+
 START, HANDLE_MENU, HANDLE_PROGRAMS,\
-HANDLE_FORM, HANDLE_QUESTIONS, HANDLE_FLOW,\
-    HANDLE_BLOCK, CLOSE = range(8)
+    HANDLE_FORM, HANDLE_QUESTION, HANDLE_STREAM,\
+    HANDLE_BLOCK, SEND_QUESTION, CLOSE = range(9)
 
 logger = logging.getLogger(__name__)
 
@@ -68,16 +70,19 @@ def stream_handle_menu(update: Update, context: CallbackContext) -> None:
         )
         return HANDLE_BLOCK
     elif entity == 'questions':
-        # TODO
-        stream = Stream.objects.get(id=int(stream_id))
-        blocks = stream.blocks.all()
-        program = ('blockquestions', blocks)
-        context.bot.send_message(
-            chat_id=update.effective_message.chat_id,
-            text='Выберите интересующий вас блок, где выступает докладчик, которому вы хотите задать вопрос',
-            reply_markup=create_menu(program)
-        )
-        return HANDLE_BLOCK
+        pass
+
+
+def question_stream_handle_menu(update: Update, context: CallbackContext) -> None:
+    active_meetup = Meetup.objects.get(status=Meetup.OPEN)
+    streams = active_meetup.streams.all()
+    streams = ('stream', list(streams))
+    context.bot.send_message(
+        chat_id=update.effective_message.chat_id,
+        text='Пожалуйста выберите поток',
+        reply_markup=create_menu(streams)
+    )
+    return HANDLE_QUESTION
 
 
 def handle_block_reports(update: Update, context: CallbackContext):
@@ -117,19 +122,65 @@ def program_handle_menu(update: Update, context: CallbackContext) -> None:
         text='Пожалуйста выберите поток необходимой программы',
         reply_markup=create_menu(program)
         )
-    return HANDLE_FLOW
+    return HANDLE_STREAM
 
 
-def question_handle_menu(update: Update, context: CallbackContext) -> None:
-    #speakers = Speaker.objects.all()
-    speakers = ('speaker', [])
+def select_speaker_menu(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    entity, stream_id = query.data.split('_')
+    blocks = Block.objects.filter(stream_id=stream_id)
+    block_ids = [block.id for block in blocks]
+    reports = Report.objects.filter(block_id__in=block_ids).select_related('speaker')
+    keyboard = []
+    for report in reports:
+        speaker_details = f'{report.speaker.first_name} {report.speaker.last_name}' \
+                          f', {report.speaker.job_title}, {report.speaker.company_name}' \
+                          f' - {report.title}'
+        product_button = [InlineKeyboardButton(
+            speaker_details,
+            callback_data=f'speaker_{report.speaker.telegram_id}'
+        )]
+        keyboard.append(product_button)
+    back_button = [InlineKeyboardButton('Назад', callback_data='back')]
+    keyboard.append(back_button)
+    reply_markup = InlineKeyboardMarkup(keyboard)
     clean_message(update, context)
     context.bot.send_message(
         chat_id=update.effective_message.chat_id,
-        text='Пожалуйста выберите поток где выступает спикер, которому вы хотите задать вопрос',
-        reply_markup=create_menu(speakers)
+        text='Пожалуйста, выберите спикера',
+        reply_markup=reply_markup
         )
-    return HANDLE_QUESTIONS
+    return HANDLE_QUESTION
+
+
+def save_chosen_speaker(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    entity, speaker_id = query.data.split('_')
+    user_data = context.user_data
+    user_data['speaker_to_ask_id'] = speaker_id
+    context.bot.send_message(
+        chat_id=update.effective_message.chat_id,
+        text='Введите вопрос',
+    )
+    return SEND_QUESTION
+
+
+def send_message_to_speaker(update: Update, context: CallbackContext) -> None:
+    question_text = update.message.text
+    current_user = User.objects.get(telegram_id=update.effective_message.chat_id)
+    current_user_details = f'{current_user.first_name} {current_user.last_name} ,' \
+                           f'{current_user.job_title} at {current_user.company_name}:\n'
+    speaker_to_ask_id = context.user_data.pop('speaker_to_ask_id')
+    context.bot.send_message(
+        chat_id=speaker_to_ask_id,
+        text=current_user_details + question_text,
+    )
+    context.bot.send_message(
+        chat_id=update.effective_message.chat_id,
+        text='Спасибо за ваш вопрос!',
+        reply_markup=create_greetings_menu()
+    )
+    return HANDLE_MENU
 
 
 def form_handle(update: Update, context: CallbackContext):

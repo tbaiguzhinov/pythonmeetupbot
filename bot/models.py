@@ -130,9 +130,6 @@ class Block(models.Model):
     starts_at = models.TimeField(
         'время начала'
     )
-    ends_at = models.TimeField(
-        'время окончания'
-    )
     moderator = models.ForeignKey(
         User,
         related_name='moderating_blocks',
@@ -147,14 +144,10 @@ class Block(models.Model):
         verbose_name='эксперт',
         blank=True,
     )
-    starts_at = models.TimeField(
-        'время начала',
-    )
 
     class Meta:
         verbose_name = 'блок'
         verbose_name_plural = 'блоки'
-
 
     def __str__(self):
         return f'{self.starts_at} {self.title}'
@@ -185,7 +178,7 @@ class Report(models.Model):
         verbose_name_plural = 'доклады'
 
     def __str__(self):
-        return f'{self.title}, {self.starts_at} - {self.ends_at}'
+        return f'{self.title}'
 
 
 class Donation(models.Model):

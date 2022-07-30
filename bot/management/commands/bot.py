@@ -8,7 +8,6 @@ from telegram.ext import (CallbackContext, CallbackQueryHandler,
                           MessageHandler, Updater)
 from bot.tg_bot import (
     HANDLE_FORM,
-    question_handle_menu,
     program_handle_menu,
     start,
     stream_handle_menu,
@@ -17,13 +16,19 @@ from bot.tg_bot import (
     end_conversation,
     form_handle,
     ask_form_questions,
+    question_stream_handle_menu,
+    select_speaker_menu,
+    save_chosen_speaker,
+    send_message_to_speaker,
     START, HANDLE_MENU, HANDLE_PROGRAMS,\
-    HANDLE_QUESTIONS, HANDLE_FLOW,\
-    HANDLE_BLOCK, CLOSE
+    HANDLE_QUESTION, HANDLE_STREAM,\
+    HANDLE_BLOCK, SEND_QUESTION, CLOSE
 )
 from bot.logging_handler import TelegramLogsHandler
 
+
 logger = logging.getLogger(__name__)
+
 
 class Command(BaseCommand):
 
@@ -57,7 +62,7 @@ def start_bot():
                 MessageHandler(Filters.text, start),
                 ],
             HANDLE_MENU: [
-                CallbackQueryHandler(question_handle_menu, pattern="^(questions)$"),
+                CallbackQueryHandler(question_stream_handle_menu, pattern="^(questions)$"),
                 CallbackQueryHandler(program_handle_menu, pattern="^(programs)$"),
                 CallbackQueryHandler(form_handle, pattern="^(form)$"),
                 CallbackQueryHandler(start, pattern="^(back)$"),
@@ -65,7 +70,7 @@ def start_bot():
             HANDLE_FORM: [
                 MessageHandler(Filters.text & ~Filters.command, ask_form_questions),
             ],
-            HANDLE_FLOW: [
+            HANDLE_STREAM: [
                 CallbackQueryHandler(start, pattern="^(back)$"),
                 CallbackQueryHandler(stream_handle_menu, pattern="^(reports)\S\d*$"),
             ],
@@ -73,8 +78,13 @@ def start_bot():
                 CallbackQueryHandler(program_handle_menu, pattern="^(programs)\d*$"),
                 CallbackQueryHandler(start, pattern="^(back)$"),
             ],
-            HANDLE_QUESTIONS: [
-                CallbackQueryHandler(question_handle_menu, pattern="^(questions)\S\d*$"),
+            HANDLE_QUESTION: [
+                CallbackQueryHandler(select_speaker_menu, pattern="^(stream_)\d*$"),
+                CallbackQueryHandler(save_chosen_speaker, pattern="^(speaker_)\d*$"),
+                CallbackQueryHandler(start, pattern="^(back)$"),
+            ],
+            SEND_QUESTION: [
+                MessageHandler(Filters.text & ~Filters.command, send_message_to_speaker),
                 CallbackQueryHandler(start, pattern="^(back)$"),
             ],
             HANDLE_BLOCK: [
