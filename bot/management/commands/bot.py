@@ -40,7 +40,6 @@ def start_bot():
     """add a loggining a bit later"""
     user_id = settings.TG_USER_ID
     logging_token = settings.TG_TOKEN_LOGGING
-    logging_token = os.getenv('TG_TOKEN_LOGGING')
     logging_bot = Bot(token=logging_token)
     logging.basicConfig(
                 format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'

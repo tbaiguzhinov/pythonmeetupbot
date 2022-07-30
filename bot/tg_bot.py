@@ -107,7 +107,7 @@ def handle_block_reports(update: Update, context: CallbackContext):
 
 
 def form_report_message(report):
-    report_message = f'Время {report.starts_at} - {report.ends_at}\n{report.title}\n{report.speaker}'
+    report_message = f'{report.title}\n{report.speaker}'
     return report_message
 
 
@@ -167,20 +167,20 @@ def ask_form_questions(update: Update, context: CallbackContext):
             return HANDLE_FORM
     else:
         user_data['answers'].extend([update.message.text])
-        name, company, position, email, telegram = user_data['answers']
+        name, company, position, email = user_data['answers']
         try:
             first_name, last_name = name.split(' ')
         except ValueError:
             first_name = name
             last_name = None
-        User.objects.get_or_create(
+        User.objects.create(
             first_name=first_name,
             last_name=last_name,
             company_name=company,
             job_title=position,
             email=email,
             telegram_id=update.effective_user.id,
-            telegram_username=telegram,
+            telegram_username=update.effective_user.username,
             questionnaire_filled=True
         )
         context.bot.send_message(

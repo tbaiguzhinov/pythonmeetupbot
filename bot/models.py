@@ -15,7 +15,8 @@ class User(models.Model):
     last_name = models.CharField(
         'фамилия',
         max_length=30,
-        blank=True
+        blank=True,
+        null=True,
     )
     company_name = models.CharField(
         'название компании',
