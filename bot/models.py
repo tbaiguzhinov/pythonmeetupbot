@@ -148,14 +148,10 @@ class Block(models.Model):
         verbose_name='эксперт',
         blank=True,
     )
-    starts_at = models.TimeField(
-        'время начала',
-    )
 
     class Meta:
         verbose_name = 'блок'
         verbose_name_plural = 'блоки'
-
 
     def __str__(self):
         return f'{self.starts_at} {self.title}'
