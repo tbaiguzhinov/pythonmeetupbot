@@ -19,14 +19,18 @@ HANDLE_FORM, HANDLE_QUESTIONS, HANDLE_FLOW,\
 logger = logging.getLogger(__name__)
 
 
-def create_greetings_menu():
+def create_greetings_menu(user_exists):
     keyboard = []
     programs_button = [InlineKeyboardButton('Программа', callback_data='programs')]
     keyboard.append(programs_button)
     questions_keyboard = [InlineKeyboardButton('Вопросы спикерам', callback_data='questions')]
     keyboard.append(questions_keyboard)
-    form_keyboard = [InlineKeyboardButton('Заполнить анкету', callback_data='form')]
-    keyboard.append(form_keyboard)
+    if not user_exists:
+        form_keyboard = [InlineKeyboardButton('Заполнить анкету', callback_data='form')]
+        keyboard.append(form_keyboard)
+    else:
+        meeting_keyboard = [InlineKeyboardButton('Хочу знакомиться!', callback_data='meeting')]
+        keyboard.append(meeting_keyboard)
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
 
@@ -45,10 +49,11 @@ def create_menu(products):
 
 def start(update: Update, context: CallbackContext) -> None:
     clean_message(update, context)
+    user_exists = User.objects.filter(telegram_id=update.effective_user.id).exists()
     context.bot.send_message(
         chat_id=update.effective_message.chat_id,
         text=greetings_message,
-        reply_markup=create_greetings_menu()
+        reply_markup=create_greetings_menu(user_exists)
         )
     return HANDLE_MENU
 
@@ -132,6 +137,12 @@ def question_handle_menu(update: Update, context: CallbackContext) -> None:
     return HANDLE_QUESTIONS
 
 
+def meeting_handle(update: Update, context: CallbackContext) -> None:
+    users = User.objects.exclude(telegram_id=update.effective_user.id,)
+    print(users)
+    pass
+
+
 def form_handle(update: Update, context: CallbackContext):
     clean_message(update, context)
     user_data = context.user_data
@@ -156,7 +167,7 @@ def ask_form_questions(update: Update, context: CallbackContext):
             return HANDLE_FORM
     else:
         user_data['answers'].extend([update.message.text])
-        name, company, position, email = user_data['answers']
+        name, company, position, email, telegram = user_data['answers']
         try:
             first_name, last_name = name.split(' ')
         except ValueError:
@@ -169,14 +180,14 @@ def ask_form_questions(update: Update, context: CallbackContext):
             job_title=position,
             email=email,
             telegram_id=update.effective_user.id,
-            telegram_username=update.message.from_user.username,
+            telegram_username=telegram,
             questionnaire_filled=True
         )
         context.bot.send_message(
-            chat_id=update.effective_message.chat_id,
-            text='Опрос окончен, спасибо за участие!',
-            reply_markup=create_greetings_menu()
-        )
+                chat_id=update.effective_message.chat_id,
+                text='Опрос окончен, спасибо за участие!',
+                reply_markup=create_greetings_menu(True)
+                )
         return HANDLE_MENU
 
 

@@ -128,10 +128,10 @@ class Block(models.Model):
         on_delete=models.CASCADE,
     )
     starts_at = models.TimeField(
-        'время начала'
+        'время начала',
     )
     ends_at = models.TimeField(
-        'время окончания'
+        'время окончания',
     )
     moderator = models.ForeignKey(
         User,
@@ -185,7 +185,7 @@ class Report(models.Model):
         verbose_name_plural = 'доклады'
 
     def __str__(self):
-        return f'{self.title}, {self.starts_at} - {self.ends_at}'
+        return self.title
 
 
 class Donation(models.Model):
