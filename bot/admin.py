@@ -33,7 +33,7 @@ class StreamInline(NestedStackedInline):
 @admin.register(Meetup)
 class MeetupAdmin(NestedModelAdmin):
     model = Meetup
-    fields = ('title', 'date')
+    fields = ('title', 'date', 'status')
     inlines = [
         StreamInline,
         ]
