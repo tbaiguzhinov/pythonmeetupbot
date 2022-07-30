@@ -156,37 +156,27 @@ def ask_form_questions(update: Update, context: CallbackContext):
             return HANDLE_FORM
     else:
         user_data['answers'].extend([update.message.text])
+        name, company, position, email = user_data['answers']
         try:
-            name, company, position, email = user_data['answers']
-            try:
-                first_name, last_name = name.split(' ')
-            except ValueError:
-                first_name = name
-                last_name = None
-            user, created = User.objects.get_or_create(
-                first_name=first_name,
-                last_name=last_name,
-                company_name=company,
-                job_title=position,
-                email=email,
-                telegram_id=update.effective_user.id,
-                telegram_username=update.message.from_user.username,
-                questionnaire_filled=True
-            )
-            if created:
-                context.bot.send_message(
-                        chat_id=update.effective_message.chat_id,
-                        text='Опрос окончен, спасибо за участие!',
-                        reply_markup=create_greetings_menu()
-                        )
-        except Exception as err:
-            print(err)
-            answers = user_data['answers']
-            context.bot.send_message(
-                        chat_id=update.effective_message.chat_id,
-                        text=f'Ваша анкета уже есть в базе данных{answers}',
-                        reply_markup=create_greetings_menu()
-                        )
+            first_name, last_name = name.split(' ')
+        except ValueError:
+            first_name = name
+            last_name = None
+        User.objects.get_or_create(
+            first_name=first_name,
+            last_name=last_name,
+            company_name=company,
+            job_title=position,
+            email=email,
+            telegram_id=update.effective_user.id,
+            telegram_username=update.message.from_user.username,
+            questionnaire_filled=True
+        )
+        context.bot.send_message(
+            chat_id=update.effective_message.chat_id,
+            text='Опрос окончен, спасибо за участие!',
+            reply_markup=create_greetings_menu()
+        )
         return HANDLE_MENU
 
 
