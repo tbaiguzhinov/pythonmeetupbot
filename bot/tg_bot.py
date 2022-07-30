@@ -17,14 +17,15 @@ HANDLE_FORM, HANDLE_QUESTIONS, HANDLE_FLOW, CLOSE = range(7)
 logger = logging.getLogger(__name__)
 
 
-def create_greetings_menu():
+def create_greetings_menu(user_exists):
     keyboard = []
     programs_button = [InlineKeyboardButton('Программа', callback_data='programs')]
     keyboard.append(programs_button)
     questions_keyboard = [InlineKeyboardButton('Вопросы спикерам', callback_data='questions')]
     keyboard.append(questions_keyboard)
-    form_keyboard = [InlineKeyboardButton('Заполнить анкету', callback_data='form')]
-    keyboard.append(form_keyboard)
+    if not user_exists:
+        form_keyboard = [InlineKeyboardButton('Заполнить анкету', callback_data='form')]
+        keyboard.append(form_keyboard)
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
 
@@ -43,10 +44,11 @@ def create_menu(products):
 
 def start(update: Update, context: CallbackContext) -> None:
     clean_message(update, context)
+    user_exists = User.objects.filter(telegram_id=update.effective_user.id).exists()
     context.bot.send_message(
         chat_id=update.effective_message.chat_id,
         text=greetings_message,
-        reply_markup=create_greetings_menu()
+        reply_markup=create_greetings_menu(user_exists)
         )
     return HANDLE_MENU
 
@@ -127,37 +129,27 @@ def ask_form_questions(update: Update, context: CallbackContext):
             return HANDLE_FORM
     else:
         user_data['answers'].extend([update.message.text])
+        name, company, position, email, telegram = user_data['answers']
         try:
-            name, company, position, email, telegram = user_data['answers']
-            try:
-                first_name, last_name = name.split(' ')
-            except ValueError:
-                first_name = name
-                last_name = None
-            user, created = User.objects.get_or_create(
-                first_name=first_name,
-                last_name=last_name,
-                company_name=company,
-                job_title=position,
-                email=email,
-                telegram_id=update.effective_user.id,
-                telegram_username=telegram,
-                questionnaire_filled=True
-            )
-            if created:
-                context.bot.send_message(
-                        chat_id=update.effective_message.chat_id,
-                        text='Опрос окончен, спасибо за участие!',
-                        reply_markup=create_greetings_menu()
-                        )
-        except Exception as err:
-            print(err)
-            answers = user_data['answers']
-            context.bot.send_message(
-                        chat_id=update.effective_message.chat_id,
-                        text=f'Ваша анкета уже есть в базе данных{answers}',
-                        reply_markup=create_greetings_menu()
-                        )
+            first_name, last_name = name.split(' ')
+        except ValueError:
+            first_name = name
+            last_name = None
+        User.objects.get_or_create(
+            first_name=first_name,
+            last_name=last_name,
+            company_name=company,
+            job_title=position,
+            email=email,
+            telegram_id=update.effective_user.id,
+            telegram_username=telegram,
+            questionnaire_filled=True
+        )
+        context.bot.send_message(
+                chat_id=update.effective_message.chat_id,
+                text='Опрос окончен, спасибо за участие!',
+                reply_markup=create_greetings_menu(True)
+                )
         return HANDLE_MENU
 
 
