@@ -99,9 +99,17 @@ def handle_block_reports(update: Update, context: CallbackContext):
     entity, stream_id = query.split('_')
     block = Block.objects.get(id=int(stream_id))
     reports = block.reports.all()
-    rep_message = ''
+    rep_message = f'{block.starts_at}-{block.ends_at} Блок "{block.title}"\n\n'
     for report in reports:
         rep_message += form_report_message(report)
+    if block.moderator:
+        block_message = f'\nМодератор блока: {report.block.moderator.__str__()}'
+        rep_message = rep_message + block_message
+    if block.expert.all():
+        experts = [expert for expert in report.block.expert.all()]
+        all_experts = '\n'.join(str(expert) for expert in experts)
+        expert_message = f'\nЭксперты блока: {all_experts}'
+        rep_message = rep_message + expert_message
     back_button = [InlineKeyboardButton('Назад', callback_data='back')]
     keyboard.append(back_button)
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -114,7 +122,7 @@ def handle_block_reports(update: Update, context: CallbackContext):
 
 
 def form_report_message(report):
-    report_message = f'Время {report.starts_at} - {report.ends_at}\nНазвание доклада: {report.title}\nСпикер доклада:{report.speaker}\n\n'
+    report_message = f'Название доклада: {report.title}\nСпикер доклада:{report.speaker}\n\n'
     return report_message
 
 
