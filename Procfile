@@ -1,2 +1,2 @@
 release: python manage.py migrate
-web: python manage.py bot -p $PORT
+web: python manage.py bot
