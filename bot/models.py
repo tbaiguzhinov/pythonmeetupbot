@@ -15,7 +15,8 @@ class User(models.Model):
     last_name = models.CharField(
         'фамилия',
         max_length=30,
-        blank=True
+        blank=True,
+        null=True,
     )
     company_name = models.CharField(
         'название компании',
@@ -127,6 +128,12 @@ class Block(models.Model):
         related_name='blocks',
         on_delete=models.CASCADE,
     )
+    starts_at = models.TimeField(
+        'время начала',
+    )
+    ends_at = models.TimeField(
+        'время окончания',
+    )
     moderator = models.ForeignKey(
         User,
         related_name='moderating_blocks',
@@ -141,14 +148,10 @@ class Block(models.Model):
         verbose_name='эксперт',
         blank=True,
     )
-    starts_at = models.TimeField(
-        'время начала',
-    )
 
     class Meta:
         verbose_name = 'блок'
         verbose_name_plural = 'блоки'
-
 
     def __str__(self):
         return f'{self.starts_at} {self.title}'
@@ -166,12 +169,6 @@ class Report(models.Model):
         on_delete=models.SET_NULL,
         null=True
     )
-    starts_at = models.TimeField(
-        'время начала'
-    )
-    ends_at = models.TimeField(
-        'время окончания'
-    )
     speaker = models.ForeignKey(
         User,
         related_name='reports',
@@ -185,7 +182,7 @@ class Report(models.Model):
         verbose_name_plural = 'доклады'
 
     def __str__(self):
-        return f'{self.title}, {self.starts_at} - {self.ends_at}'
+        return self.title
 
 
 class Donation(models.Model):
