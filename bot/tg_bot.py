@@ -102,7 +102,7 @@ def handle_block_reports(update: Update, context: CallbackContext):
 
 
 def form_report_message(report):
-    report_message = f'Время {report.starts_at} - {report.ends_at}\n{report.title}\n{report.speaker}'
+    report_message = f'Время {report.starts_at} - {report.ends_at}\nНазвание доклада: {report.title}\nСпикер доклада:{report.speaker}\n\n'
     return report_message
 
 
