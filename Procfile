@@ -1,2 +1,2 @@
 release: python manage.py migrate
-web: gunicorn meetupbot.wsgi
+web: python manage.py bot
