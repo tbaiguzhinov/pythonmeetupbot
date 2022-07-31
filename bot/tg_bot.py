@@ -1,6 +1,6 @@
 from email import message
 import os
-#import time
+import random
 #from functools import partial
 from django.core.exceptions import FieldError
 from dotenv import load_dotenv
@@ -204,9 +204,18 @@ def send_message_to_speaker(update: Update, context: CallbackContext) -> None:
 
 
 def meeting_handle(update: Update, context: CallbackContext) -> None:
-    users = User.objects.exclude(telegram_id=update.effective_user.id,)
-    print(users)
-    pass
+    users = User.objects.exclude(telegram_id=update.effective_user.id)
+    random_user = random.choice(users)
+    text = f'Имя: {random_user.first_name} {random_user.last_name} \n\
+Должность и компания: {random_user.job_title}, {random_user.company_name} \n\
+Имя пользователя: @{random_user.telegram_username}'
+    context.bot.send_message(
+        chat_id=update.effective_message.chat_id,
+        text=text,
+        reply_markup=create_greetings_menu(True)
+    )
+    return HANDLE_MENU
+    
 
 
 def form_handle(update: Update, context: CallbackContext):
