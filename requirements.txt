@@ -7,3 +7,4 @@ django-nested-inline==0.4.5
 gunicorn==20.1.0
 psycopg2-binary==2.9.3
 whitenoise>=6.0,<7.0
+redis==4.3.4

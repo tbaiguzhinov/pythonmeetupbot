@@ -26,7 +26,8 @@ from bot.tg_bot import (
     HANDLE_BLOCK, SEND_QUESTION, CLOSE
 )
 from bot.logging_handler import TelegramLogsHandler
-
+from bot.storing_data import MeetupBotPersistence
+import redis
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +43,15 @@ class Command(BaseCommand):
 
 def start_bot():
     token = settings.TOKEN_TELEGRAM
+    redis_host = settings.REDIS_HOST
+    redis_port = settings.REDIS_PORT
+    redis_pass = settings.REDIS_PASS
+    redis_base = redis.Redis(
+        host=redis_host,
+        port=redis_port,
+        password=redis_pass
+        )
+    persistence = MeetupBotPersistence(redis_base)
     """add a loggining a bit later"""
     user_id = settings.TG_USER_ID
     logging_token = settings.TG_TOKEN_LOGGING
@@ -53,7 +63,7 @@ def start_bot():
     logger.addHandler(TelegramLogsHandler(tg_bot=logging_bot, chat_id=user_id))
     logger.info('PythonMeetup bot запущен')
     """Start the bot."""
-    updater = Updater(token)
+    updater = Updater(token, persistence=persistence)
     dispatcher = updater.dispatcher
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
@@ -98,6 +108,7 @@ def start_bot():
         },
         fallbacks=[CommandHandler("end", end_conversation)],
         name="my_conversation",
+        persistent=True,
     )
     dispatcher.add_handler(conv_handler)
     dispatcher.add_error_handler(handle_error)
