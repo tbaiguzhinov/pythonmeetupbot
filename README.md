@@ -5,8 +5,13 @@
 * возможность задать вопрос спикеру
 * возможность знакомства с другими участниками - вывод данных случайного пользователя
 
-Бот реализован здесь: [https://t.me/meetup_testbot](https://t.me/meetup_testbot).
+Бот реализован здесь: [https://t.me/meetup_testbot](https://t.me/meetup_testbot).  
 Админка здесь: [https://pythonmeetup.herokuapp.com/](https://pythonmeetup.herokuapp.com/)
+
+### Участники проекта:
+* [Артем](https://github.com/Artemsav)
+* [Павел](https://github.com/pkzrnvch)
+* [Тимур](https://github.com/tbaiguzhinov)
 
 ## Запуск:
 
@@ -19,10 +24,10 @@ Python3 должен быть уже установлен.
 
 ## Загрузка программы:
 
-* Запустите бот командой  
+* Запустите сервер командой  
 ```python3 manage.py runserver```
 * Пройдите по адресу:  
-```http://127.0.0.1:8000/```
+```http://127.0.0.1:8000/admin/```  
 Для входа необходима регистрация в качестве админа.
 
 ## Переменные окружения
