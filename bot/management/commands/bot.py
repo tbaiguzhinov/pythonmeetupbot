@@ -1,9 +1,8 @@
-import os
 import logging
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import (CallbackContext, CallbackQueryHandler,
+from telegram import Bot
+from telegram.ext import (CallbackQueryHandler,
                           CommandHandler, ConversationHandler, Filters,
                           MessageHandler, Updater)
 from bot.tg_bot import (
@@ -103,7 +102,7 @@ def start_bot():
                 CallbackQueryHandler(start, pattern="^(back)$"),
             ],
             CLOSE: [
-                
+           
             ]
         },
         fallbacks=[CommandHandler("end", end_conversation)],
