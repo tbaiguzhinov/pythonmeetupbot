@@ -30,7 +30,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1')
 
-ALLOWED_HOSTS = ['pythonmeetup.herokuapp.com']
+ALLOWED_HOSTS = ['pythonmeetup.herokuapp.com', '127.0.0.1']
 
 
 # Application definition
@@ -145,3 +145,9 @@ TG_USER_ID = os.getenv('TG_USER_ID')
 TG_TOKEN_LOGGING = os.getenv('TG_TOKEN_LOGGING')
 
 PHONENUMBER_DEFAULT_REGION = 'RU'
+
+# REDIS
+
+REDIS_HOST = os.getenv('REDIS_HOST')
+REDIS_PORT = os.getenv('REDIS_PORT')
+REDIS_PASS = os.getenv('REDIS_PASS')

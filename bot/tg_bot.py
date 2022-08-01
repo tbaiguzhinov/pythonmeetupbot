@@ -1,14 +1,7 @@
-from email import message
-import os
 import random
-#from functools import partial
-from django.core.exceptions import FieldError
-from dotenv import load_dotenv
-from telegram import (Bot, InlineKeyboardButton, InlineKeyboardMarkup,
+from telegram import (InlineKeyboardButton, InlineKeyboardMarkup,
                       Update, error as telegram_error)
-from telegram.ext import (CallbackContext, CallbackQueryHandler,
-                          CommandHandler, ConversationHandler, Filters,
-                          MessageHandler, Updater)
+from telegram.ext import (CallbackContext, ConversationHandler)
 from bot.static_text import greetings_message
 from bot.models import User, Meetup, Stream, Report, Donation, Question, Block
 import json
@@ -50,7 +43,7 @@ def create_menu(products):
     return reply_markup
 
 
-def start(update: Update, context: CallbackContext) -> None:
+def start(update: Update, context: CallbackContext) -> int:
     clean_message(update, context)
     user_exists = User.objects.filter(telegram_id=update.effective_user.id).exists()
     context.bot.send_message(
@@ -61,7 +54,7 @@ def start(update: Update, context: CallbackContext) -> None:
     return HANDLE_MENU
 
 
-def stream_handle_menu(update: Update, context: CallbackContext) -> None:
+def stream_handle_menu(update: Update, context: CallbackContext) -> int:
     clean_message(update, context)
     query = update.callback_query.data
     entity, stream_id = query.split('_')
@@ -75,11 +68,9 @@ def stream_handle_menu(update: Update, context: CallbackContext) -> None:
             reply_markup=create_menu(program)
         )
         return HANDLE_BLOCK
-    elif entity == 'questions':
-        pass
 
 
-def question_stream_handle_menu(update: Update, context: CallbackContext) -> None:
+def question_stream_handle_menu(update: Update, context: CallbackContext) -> int:
     clean_message(update, context)
     active_meetup = Meetup.objects.get(status=Meetup.OPEN)
     streams = active_meetup.streams.all()
@@ -118,7 +109,7 @@ def handle_block_reports(update: Update, context: CallbackContext):
         text=rep_message,
         reply_markup=reply_markup
     )
-    return HANDLE_BLOCK    
+    return HANDLE_BLOCK
 
 
 def form_report_message(report):
@@ -126,7 +117,7 @@ def form_report_message(report):
     return report_message
 
 
-def program_handle_menu(update: Update, context: CallbackContext) -> None:
+def program_handle_menu(update: Update, context: CallbackContext) -> int:
     reports = Report.objects.all()
     streams = [report.block.stream for report in reports]
     current_streams = set(stream for stream in streams if stream.meetup.status == 'OP')
@@ -140,7 +131,7 @@ def program_handle_menu(update: Update, context: CallbackContext) -> None:
     return HANDLE_STREAM
 
 
-def select_speaker_menu(update: Update, context: CallbackContext) -> None:
+def select_speaker_menu(update: Update, context: CallbackContext) -> int:
     query = update.callback_query
     entity, stream_id = query.data.split('_')
     blocks = Block.objects.filter(stream_id=stream_id)
@@ -168,7 +159,7 @@ def select_speaker_menu(update: Update, context: CallbackContext) -> None:
     return HANDLE_QUESTION
 
 
-def save_chosen_speaker(update: Update, context: CallbackContext) -> None:
+def save_chosen_speaker(update: Update, context: CallbackContext) -> int:
     clean_message(update, context)
     query = update.callback_query
     entity, speaker_id = query.data.split('_')
@@ -181,7 +172,7 @@ def save_chosen_speaker(update: Update, context: CallbackContext) -> None:
     return SEND_QUESTION
 
 
-def send_message_to_speaker(update: Update, context: CallbackContext) -> None:
+def send_message_to_speaker(update: Update, context: CallbackContext) -> int:
     question_text = update.message.text
     current_user = User.objects.get(telegram_id=update.effective_message.chat_id)
     current_user_details = f'{current_user.first_name} {current_user.last_name}, ' \
@@ -203,19 +194,18 @@ def send_message_to_speaker(update: Update, context: CallbackContext) -> None:
     return HANDLE_MENU
 
 
-def meeting_handle(update: Update, context: CallbackContext) -> None:
+def meeting_handle(update: Update, context: CallbackContext) -> int:
     users = User.objects.exclude(telegram_id=update.effective_user.id)
     random_user = random.choice(users)
     text = f'Имя: {random_user.first_name} {random_user.last_name} \n\
-Должность и компания: {random_user.job_title}, {random_user.company_name} \n\
-Имя пользователя: @{random_user.telegram_username}'
+        Должность и компания: {random_user.job_title}, {random_user.company_name} \n\
+        Имя пользователя: @{random_user.telegram_username}'
     context.bot.send_message(
         chat_id=update.effective_message.chat_id,
         text=text,
         reply_markup=create_greetings_menu(True)
     )
     return HANDLE_MENU
-    
 
 
 def form_handle(update: Update, context: CallbackContext):

@@ -16,6 +16,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from bot.views import redirect2admin
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', redirect2admin),
 ]
