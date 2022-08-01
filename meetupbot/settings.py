@@ -30,7 +30,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['https://pythonmeetup.herokuapp.com']
+ALLOWED_HOSTS = ['pythonmeetup.herokuapp.com']
 
 
 # Application definition
