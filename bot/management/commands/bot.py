@@ -100,9 +100,6 @@ def start_bot():
             HANDLE_BLOCK: [
                 CallbackQueryHandler(handle_block_reports, pattern="^(blockreport)\S\d*$"),
                 CallbackQueryHandler(start, pattern="^(back)$"),
-            ],
-            CLOSE: [
-           
             ]
         },
         fallbacks=[CommandHandler("end", end_conversation)],

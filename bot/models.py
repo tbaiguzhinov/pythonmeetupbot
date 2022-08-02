@@ -53,6 +53,11 @@ class User(models.Model):
         blank=True,
         null=True
     )
+    chat_id = models.SmallIntegerField(
+        'ID номер чата телеграмм',
+        null=True,
+        blank=True
+    )
 
     class Meta:
         verbose_name = 'пользователь'
@@ -138,7 +143,7 @@ class Block(models.Model):
         User,
         related_name='moderating_blocks',
         verbose_name='модератор',
-        on_delete=models.DO_NOTHING,
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
     )
