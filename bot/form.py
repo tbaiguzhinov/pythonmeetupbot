@@ -10,7 +10,6 @@ class SendUserNotification(forms.Form):
     )
     change_form_template = "bot/templates/bot_meetup.html"
 
-    def form_action(self):
-        print(self.message)
-        send_notifications_to_user(self.message)
-        return self.message
+    def form_action(self, message):
+        send_notifications_to_user(message)
+        return message

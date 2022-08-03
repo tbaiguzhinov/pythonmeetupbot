@@ -36,6 +36,7 @@ ALLOWED_HOSTS = ['pythonmeetup.herokuapp.com', '127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
+    'admin_shortcuts',   # should be just before django.contrib.admin
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -118,8 +119,8 @@ LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
 DATETIME_FORMAT = '%Y-%m-%d %H:%M'
-USE_L10N = False
-#USE_I18N = True
+
+USE_I18N = True
 
 USE_TZ = True
 
@@ -153,3 +154,48 @@ PHONENUMBER_DEFAULT_REGION = 'RU'
 REDIS_HOST = os.getenv('REDIS_HOST')
 REDIS_PORT = os.getenv('REDIS_PORT')
 REDIS_PASS = os.getenv('REDIS_PASS')
+
+ADMIN_SHORTCUTS = [
+    {
+        'shortcuts': [
+            {
+                'url': '/',
+            },
+            {
+                'url_name': 'admin:logout',
+            },
+            {
+                'title': 'Users',
+                'url_name': 'admin:auth_user_changelist',
+            },
+            {
+                'title': 'Groups',
+                'url_name': 'admin:auth_group_changelist',
+            },
+            {
+                'title': 'Add user',
+                'url_name': 'admin:auth_user_add',
+            },
+        ]
+    },
+    {
+        'title': 'MeetupConference Bot',
+        'shortcuts': [
+           
+            {
+                'title': 'Products',
+                'url_name': 'admin:index',
+                'icon':'columns'
+            },
+            {
+                'title': 'Orders',
+                'url_name': 'admin:index'
+            },
+        ]
+    },
+]
+ADMIN_SHORTCUTS_SETTINGS = {
+    'show_on_all_pages': True,
+    'hide_app_list': False,
+    'open_new_window': False,
+}

@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.forms import ValidationError
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.html import format_html
@@ -87,28 +88,19 @@ class MeetupAdmin(NestedModelAdmin):
         action_title
     ):
         meetup = self.get_object(request, meetup_id)
-
         if request.method != 'POST':
             form = action_form()
-            print('if')
-
         else:
-            print('else')
             form = action_form(request.POST)
-            print(request.POST['message'])
             if form.is_valid():
                 try:
-                    print(form.form_action('sdsds'))
-                    form.form_action('sdsds')
-                except Exception as e:
-                    # If save() raised, the form will a have a non
-                    # field error containing an informative message.
+                    form.form_action(request.POST['message'])
+                except ValidationError as e:
+                    self.message_user(request, 'Ошибка, введите корректное сообщение')
                     pass
-            else:
-                self.message_user(request, 'Success')
+                self.message_user(request, 'Сообщение отправлено')
                 url = reverse(
-                    'admin::bot_meetup',
-                    args=[meetup.pk],
+                    'admin:index',
                     current_app=self.admin_site.name,
                 )
                 return HttpResponseRedirect(url)
@@ -124,4 +116,11 @@ class MeetupAdmin(NestedModelAdmin):
             'bot_meetup.html',
             context,
         )
-        
+
+@admin.register(Donation)
+class DonationAdmin(admin.ModelAdmin):
+    list_display = (
+        'donated_by',
+        'sum',
+        'donated_at'
+    )
