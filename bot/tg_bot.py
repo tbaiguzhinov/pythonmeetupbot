@@ -1,12 +1,15 @@
-import random
-from telegram import (InlineKeyboardButton, InlineKeyboardMarkup,
-                      Update, error as telegram_error)
-from telegram.ext import (CallbackContext, ConversationHandler)
-from bot.static_text import greetings_message
-from bot.models import User, Meetup, Stream, Report, Donation, Question, Block
 import json
 import logging
+import random
 
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram import error as telegram_error
+from telegram.ext import CallbackContext, ConversationHandler
+
+from bot.models import Block, Donation, Meetup, Question, Report, Stream, User
+from bot.static_text import greetings_message
+import requests
+from django.conf import settings
 
 START, HANDLE_MENU, HANDLE_PROGRAMS,\
     HANDLE_FORM, HANDLE_QUESTION, HANDLE_STREAM,\
@@ -246,7 +249,8 @@ def ask_form_questions(update: Update, context: CallbackContext):
             email=email,
             telegram_id=update.effective_user.id,
             telegram_username=update.effective_user.username,
-            questionnaire_filled=True
+            questionnaire_filled=True,
+            chat_id=update.effective_message.chat_id
         )
         context.bot.send_message(
                 chat_id=update.effective_message.chat_id,
@@ -281,3 +285,16 @@ def end_conversation(update: Update, context: CallbackContext):
         'Пока!'
         )
     return ConversationHandler.END
+
+
+def send_notifications_to_user(message: str) -> None:
+    users = User.objects.filter(chat_id__isnull=False)
+    users_telegram_chat_id = [user.chat_id for user in users]
+    telegram_token = settings.TOKEN_TELEGRAM
+    url = f'https://api.telegram.org/bot{telegram_token}/sendMessage'
+    for user_telegram_chat_id in users_telegram_chat_id:
+        try:
+            requests.post(url, json={'chat_id': user_telegram_chat_id, 'text': message})
+        except requests.HTTPError as err:
+            logger.warning(f'Failed to send message to user chat id{user_telegram_chat_id}\
+                \neror is {err}')
