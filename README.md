@@ -20,4 +20,4 @@ Python3 должен быть уже установлен.
 
 
 ## Внимание django-admin-shortcuts==2.0 
-Библиотека имеет конфликт с django версией 4, чтобы все работало необходимо самому поравить библиотеку, как в пул реквесте по [ссылке](https://github.com/alesdotio/django-admin-shortcuts/pull/40/commits/9fa4c1e7349a0da4dcbb77ec3aef19cd0f4be8d5)
+Библиотека имеет конфликт с django версией 4, чтобы все работало необходимо самому поправить библиотеку, как в пул реквесте по [ссылке](https://github.com/alesdotio/django-admin-shortcuts/pull/40/commits/9fa4c1e7349a0da4dcbb77ec3aef19cd0f4be8d5)
