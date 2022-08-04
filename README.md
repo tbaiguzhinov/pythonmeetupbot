@@ -11,10 +11,7 @@
 Бот реализован здесь: [https://t.me/meetup_testbot](https://t.me/meetup_testbot).  
 Админка здесь: [https://pythonmeetup.herokuapp.com/](https://pythonmeetup.herokuapp.com/)
 
-### Участники проекта:
-* [Артем](https://github.com/Artemsav)
-* [Павел](https://github.com/pkzrnvch)
-* [Тимур](https://github.com/tbaiguzhinov)
+Участники проекта: [Артем](https://github.com/Artemsav), [Павел](https://github.com/pkzrnvch) и [Тимур](https://github.com/tbaiguzhinov).
 
 ## Запуск
 
