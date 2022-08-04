@@ -142,14 +142,22 @@ def select_speaker_menu(update: Update, context: CallbackContext) -> int:
     reports = Report.objects.filter(block_id__in=block_ids).select_related('speaker')
     keyboard = []
     for report in reports:
-        speaker_details = f'{report.speaker.first_name} {report.speaker.last_name}' \
+        try:
+            speaker_details = f'{report.speaker.first_name} {report.speaker.last_name}' \
                           f', {report.speaker.job_title}, {report.speaker.company_name}' \
                           f' - {report.title}'
-        product_button = [InlineKeyboardButton(
-            speaker_details,
-            callback_data=f'speaker_{report.speaker.telegram_id}'
-        )]
-        keyboard.append(product_button)
+            product_button = [InlineKeyboardButton(
+                speaker_details,
+                callback_data=f'speaker_{report.speaker.telegram_id}'
+            )]
+            keyboard.append(product_button)
+        except AttributeError:
+            back_button = [InlineKeyboardButton(
+                f'Пока на докладе {report.title} нет зарегистрированных спикеров',
+                callback_data='back'
+            )]
+            keyboard.append(back_button)
+
     back_button = [InlineKeyboardButton('Назад', callback_data='back')]
     keyboard.append(back_button)
     reply_markup = InlineKeyboardMarkup(keyboard)
