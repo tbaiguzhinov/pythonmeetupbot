@@ -165,7 +165,7 @@ ADMIN_SHORTCUTS = [
                 'url_name': 'admin:logout',
             },
             {
-                'title': 'Users',
+                'title': 'Admins',
                 'url_name': 'admin:auth_user_changelist',
             },
             {
@@ -173,7 +173,7 @@ ADMIN_SHORTCUTS = [
                 'url_name': 'admin:auth_group_changelist',
             },
             {
-                'title': 'Add user',
+                'title': 'Add admin',
                 'url_name': 'admin:auth_user_add',
             },
         ]
@@ -183,13 +183,19 @@ ADMIN_SHORTCUTS = [
         'shortcuts': [
            
             {
-                'title': 'Products',
-                'url_name': 'admin:index',
-                'icon':'columns'
+                'title': 'Новый Meetup',
+                'url_name': 'admin:bot_meetup_add',
+                'icon': 'handshake'
             },
             {
-                'title': 'Orders',
-                'url_name': 'admin:index'
+                'title': 'Донаты',
+                'url_name': 'admin:bot_donation_changelist',
+                'icon': 'dollar-sign'
+            },
+            {
+                'title': 'Добавить спикера',
+                'url_name': 'admin:bot_user_add',
+                'icon': 'user'
             },
         ]
     },

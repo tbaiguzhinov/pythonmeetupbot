@@ -1,16 +1,14 @@
 from django.contrib import admin
 from django.forms import ValidationError
 from django.http import HttpResponseRedirect
-from django.urls import reverse
+from django.template.response import TemplateResponse
+from django.urls import re_path, reverse
 from django.utils.html import format_html
 from nested_inline.admin import NestedModelAdmin, NestedStackedInline
 
-from bot.models import Block, Meetup, Report, Stream, User
+from bot.form import SendUserNotification
+from bot.models import Block, Donation, Meetup, Report, Stream, User
 
-from .form import SendUserNotification
-from .models import Donation, Meetup, Question, Report, Stream, User
-from django.urls import path, re_path
-from django.template.response import TemplateResponse
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
@@ -51,8 +49,7 @@ class MeetupAdmin(NestedModelAdmin):
     inlines = [
         StreamInline,
         ]
-    #change_form_template = "bot/templates/admin/bot/bot_meetup.html"
-    #'bot/meetup/[0-9]+/message/'
+
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
@@ -63,7 +60,7 @@ class MeetupAdmin(NestedModelAdmin):
                     ),
         ]
         return custom_urls + urls
-   
+
     def send_notification(self, obj):
         return format_html(
             '<a class="button" href="{}">Оповестить</a>&nbsp;',
@@ -79,7 +76,7 @@ class MeetupAdmin(NestedModelAdmin):
             action_form=SendUserNotification,
             action_title='Notification',
         )
-    
+
     def process_action(
         self,
         request,
@@ -94,7 +91,7 @@ class MeetupAdmin(NestedModelAdmin):
             form = action_form(request.POST)
             if form.is_valid():
                 try:
-                    form.form_action(request.POST['message'])
+                    form.form_action(request.POST['message'], meetup_id)
                 except ValidationError as e:
                     self.message_user(request, 'Ошибка, введите корректное сообщение')
                     pass
@@ -116,6 +113,7 @@ class MeetupAdmin(NestedModelAdmin):
             'bot_meetup.html',
             context,
         )
+
 
 @admin.register(Donation)
 class DonationAdmin(admin.ModelAdmin):

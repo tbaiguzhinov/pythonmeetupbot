@@ -2,14 +2,14 @@ import json
 import logging
 import random
 
+import requests
+from django.conf import settings
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram import error as telegram_error
 from telegram.ext import CallbackContext, ConversationHandler
 
-from bot.models import Block, Donation, Meetup, Question, Report, Stream, User
+from bot.models import Block, Meetup, Report, Stream, User
 from bot.static_text import greetings_message
-import requests
-from django.conf import settings
 
 START, HANDLE_MENU, HANDLE_PROGRAMS,\
     HANDLE_FORM, HANDLE_QUESTION, HANDLE_STREAM,\
@@ -142,14 +142,22 @@ def select_speaker_menu(update: Update, context: CallbackContext) -> int:
     reports = Report.objects.filter(block_id__in=block_ids).select_related('speaker')
     keyboard = []
     for report in reports:
-        speaker_details = f'{report.speaker.first_name} {report.speaker.last_name}' \
+        try:
+            speaker_details = f'{report.speaker.first_name} {report.speaker.last_name}' \
                           f', {report.speaker.job_title}, {report.speaker.company_name}' \
                           f' - {report.title}'
-        product_button = [InlineKeyboardButton(
-            speaker_details,
-            callback_data=f'speaker_{report.speaker.telegram_id}'
-        )]
-        keyboard.append(product_button)
+            product_button = [InlineKeyboardButton(
+                speaker_details,
+                callback_data=f'speaker_{report.speaker.telegram_id}'
+            )]
+            keyboard.append(product_button)
+        except AttributeError:
+            back_button = [InlineKeyboardButton(
+                f'Пока на докладе {report.title} нет зарегистрированных спикеров',
+                callback_data='back'
+            )]
+            keyboard.append(back_button)
+
     back_button = [InlineKeyboardButton('Назад', callback_data='back')]
     keyboard.append(back_button)
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -250,7 +258,8 @@ def ask_form_questions(update: Update, context: CallbackContext):
             telegram_id=update.effective_user.id,
             telegram_username=update.effective_user.username,
             questionnaire_filled=True,
-            chat_id=update.effective_message.chat_id
+            chat_id=update.effective_message.chat_id,
+            meetups=Meetup.objects.filter(status='OP')
         )
         context.bot.send_message(
                 chat_id=update.effective_message.chat_id,
@@ -287,8 +296,8 @@ def end_conversation(update: Update, context: CallbackContext):
     return ConversationHandler.END
 
 
-def send_notifications_to_user(message: str) -> None:
-    users = User.objects.filter(chat_id__isnull=False)
+def send_notifications_to_user(message: str, meetup_id: str) -> None:
+    users = User.objects.filter(chat_id__isnull=False, meetups__id=meetup_id)
     users_telegram_chat_id = [user.chat_id for user in users]
     telegram_token = settings.TOKEN_TELEGRAM
     url = f'https://api.telegram.org/bot{telegram_token}/sendMessage'
