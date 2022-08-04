@@ -8,6 +8,14 @@
 
 ![пример работы](./media/example.gif)
 
+Бот реализован здесь: [https://t.me/meetup_testbot](https://t.me/meetup_testbot).  
+Админка здесь: [https://pythonmeetup.herokuapp.com/](https://pythonmeetup.herokuapp.com/)
+
+### Участники проекта:
+* [Артем](https://github.com/Artemsav)
+* [Павел](https://github.com/pkzrnvch)
+* [Тимур](https://github.com/tbaiguzhinov)
+
 ## Запуск
 
 Python3 должен быть уже установлен.
@@ -21,7 +29,6 @@ Python3 должен быть уже установлен.
 ```python3 manage.py createsuperuser```
 ```python3 manage.py migrate```
 ```python3 manage.py runserver```
-На команду `/start` должен отреагировать, значит проект развернулся, все ок.
 
 ## Переменные окружения
 
