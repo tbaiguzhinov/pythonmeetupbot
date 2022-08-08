@@ -215,29 +215,3 @@ class Donation(models.Model):
     def __str__(self):
         return f'{self.sum} рублей от ' \
                f'{self.donated_by.first_name} {self.donated_by.last_name}'
-
-
-class Question(models.Model):
-    text = models.TextField(
-        'текст вопроса'
-    )
-    author = models.ForeignKey(
-        User,
-        related_name='asked_questions',
-        verbose_name='автор вопроса',
-        on_delete=models.SET_NULL,
-        null=True
-    )
-    recipient = models.ForeignKey(
-        User,
-        related_name='received_questions',
-        verbose_name='адресат вопроса',
-        on_delete=models.CASCADE
-    )
-
-    class Meta:
-        verbose_name = 'вопрос'
-        verbose_name_plural = 'вопросы'
-
-    def __str__(self):
-        return f'вопрос для {self.recipient.first_name} {self.recipient.last_name}'

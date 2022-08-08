@@ -1,4 +1,4 @@
-Django==4.0.5
+Django<4
 python-telegram-bot==13.12
 python_dotenv==0.20.0
 phonenumbers==8.12.52

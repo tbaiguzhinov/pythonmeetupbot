@@ -4,16 +4,16 @@ import random
 
 import requests
 from django.conf import settings
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, LabeledPrice, Update
 from telegram import error as telegram_error
 from telegram.ext import CallbackContext, ConversationHandler
 
-from bot.models import Block, Meetup, Report, Stream, User
+from bot.models import Block, Meetup, Report, Stream, User, Donation
 from bot.static_text import greetings_message
 
 START, HANDLE_MENU, HANDLE_PROGRAMS,\
     HANDLE_FORM, HANDLE_QUESTION, HANDLE_STREAM,\
-    HANDLE_BLOCK, SEND_QUESTION, CLOSE = range(9)
+    HANDLE_BLOCK, SEND_QUESTION, HANDLE_DONATION, CLOSE = range(10)
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +30,8 @@ def create_greetings_menu(user_exists):
     else:
         meeting_keyboard = [InlineKeyboardButton('Хочу знакомиться!', callback_data='meeting')]
         keyboard.append(meeting_keyboard)
+    donation_button = [InlineKeyboardButton('Поддержать проект', callback_data='donation')]
+    keyboard.append(donation_button)
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
 
@@ -267,6 +269,68 @@ def ask_form_questions(update: Update, context: CallbackContext):
                 reply_markup=create_greetings_menu(True)
                 )
         return HANDLE_MENU
+
+
+def select_amount_to_donate_menu(update: Update, context: CallbackContext) -> None:
+    keyboard = []
+    donation_amounts = [100, 150, 250, 500, 750, 1000]
+    for donation_amount in donation_amounts:
+        donation_button = [InlineKeyboardButton(
+            donation_amount,
+            callback_data=f'donation_{donation_amount}'
+        )]
+        keyboard.append(donation_button)
+    back_button = [InlineKeyboardButton('Назад', callback_data='back')]
+    keyboard.append(back_button)
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    clean_message(update, context)
+    context.bot.send_message(
+        chat_id=update.effective_message.chat_id,
+        text='Пожалуйста, выберите сумму:',
+        reply_markup=reply_markup
+    )
+    return HANDLE_DONATION
+
+
+def send_donation_invoice(update: Update, context: CallbackContext) -> None:
+    clean_message(update, context)
+    query = update.callback_query.data
+    active_meetup = Meetup.objects.get(status=Meetup.OPEN)
+    entity, donation_amount = query.split('_')
+    chat_id = update.effective_message.chat_id
+    title = 'Поддержать митап'
+    description = f'Поддержать организаторов митапа {active_meetup.title} на сумму в {donation_amount} рублей'
+    payload = f'{active_meetup.title}_donation'
+    provider_token = settings.PAYMENT_SYSTEM_TOKEN
+    currency = 'RUB'
+    prices = [LabeledPrice('Donation', int(donation_amount) * 100)]
+    context.bot.send_invoice(
+        chat_id, title, description, payload, provider_token, currency, prices
+    )
+    user_data = context.user_data
+    user_data['donation_amount'] = donation_amount
+    return HANDLE_DONATION
+
+
+def precheckout_callback(update: Update, context: CallbackContext) -> None:
+    query = update.pre_checkout_query
+    active_meetup = Meetup.objects.get(status=Meetup.OPEN)
+    if query.invoice_payload != f'{active_meetup.title}_donation':
+        query.answer(ok=False, error_message="Что-то пошло не так...")
+    else:
+        query.answer(ok=True)
+
+
+def successful_donation_callback(update: Update, context: CallbackContext) -> None:
+    current_user = User.objects.get(telegram_id=update.effective_message.chat_id)
+    donation_amount = context.user_data.pop('donation_amount')
+    Donation.objects.create(donated_by=current_user, sum=donation_amount)
+    context.bot.send_message(
+        chat_id=update.effective_message.chat_id,
+        text='Спасибо за вашу поддержку!',
+        reply_markup=create_greetings_menu(True)
+    )
+    return HANDLE_MENU
 
 
 def read_poll_questions():
