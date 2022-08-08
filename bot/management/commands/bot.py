@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand
 from telegram import Bot
 from telegram.ext import (CallbackQueryHandler,
                           CommandHandler, ConversationHandler, Filters,
-                          MessageHandler, Updater)
+                          MessageHandler, PreCheckoutQueryHandler, Updater)
 from bot.tg_bot import (
     HANDLE_FORM,
     program_handle_menu,
@@ -20,8 +20,12 @@ from bot.tg_bot import (
     select_speaker_menu,
     save_chosen_speaker,
     send_message_to_speaker,
-    START, HANDLE_MENU, HANDLE_PROGRAMS,\
-    HANDLE_QUESTION, HANDLE_STREAM,\
+    select_amount_to_donate_menu,
+    send_donation_invoice,
+    precheckout_callback,
+    successful_donation_callback,
+    START, HANDLE_MENU, HANDLE_PROGRAMS,
+    HANDLE_QUESTION, HANDLE_STREAM, HANDLE_DONATION,
     HANDLE_BLOCK, SEND_QUESTION, CLOSE
 )
 from bot.logging_handler import TelegramLogsHandler
@@ -75,6 +79,7 @@ def start_bot():
                 CallbackQueryHandler(program_handle_menu, pattern="^(programs)$"),
                 CallbackQueryHandler(form_handle, pattern="^(form)$"),
                 CallbackQueryHandler(meeting_handle, pattern="^(meeting)$"),
+                CallbackQueryHandler(select_amount_to_donate_menu, pattern="^(donation)$"),
                 CallbackQueryHandler(start, pattern="^(back)$"),
                 ],
             HANDLE_FORM: [
@@ -100,13 +105,19 @@ def start_bot():
             HANDLE_BLOCK: [
                 CallbackQueryHandler(handle_block_reports, pattern="^(blockreport)\S\d*$"),
                 CallbackQueryHandler(start, pattern="^(back)$"),
-            ]
+            ],
+            HANDLE_DONATION: [
+                CallbackQueryHandler(start, pattern="^(back)$"),
+                CallbackQueryHandler(send_donation_invoice, pattern="^(donation_)\d*$"),
+                MessageHandler(Filters.successful_payment, successful_donation_callback),
+            ],
         },
         fallbacks=[CommandHandler("end", end_conversation)],
         name="my_conversation",
         persistent=True,
     )
     dispatcher.add_handler(conv_handler)
+    dispatcher.add_handler(PreCheckoutQueryHandler(precheckout_callback))
     dispatcher.add_error_handler(handle_error)
     updater.start_polling()
     updater.idle()
